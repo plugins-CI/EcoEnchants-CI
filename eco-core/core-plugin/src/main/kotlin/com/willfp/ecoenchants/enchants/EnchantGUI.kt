@@ -1,6 +1,7 @@
 package com.willfp.ecoenchants.enchants
 
 import com.github.benmanes.caffeine.cache.Caffeine
+import com.willfp.eco.core.config.base.LangYml
 import com.willfp.eco.core.config.updating.ConfigUpdater
 import com.willfp.eco.core.drops.DropQueue
 import com.willfp.eco.core.fast.fast
@@ -21,6 +22,7 @@ import com.willfp.eco.core.items.builder.ItemStackBuilder
 import com.willfp.eco.core.items.isEmpty
 import com.willfp.eco.util.StringUtils
 import com.willfp.eco.util.formatEco
+import com.willfp.eco.util.toNiceString
 import com.willfp.ecoenchants.EcoEnchantsPlugin
 import com.willfp.ecoenchants.display.EnchantSorter.sortForDisplay
 import com.willfp.ecoenchants.display.getFormattedName
@@ -261,6 +263,9 @@ private fun EcoEnchant.getInformationSlot(plugin: EcoEnchantsPlugin): Slot {
                                         }.ifEmpty { plugin.langYml.getFormattedString("no-conflicts").toWrappable() }
                                     }
                                 )
+                                .replace("%tradeable%", this.isTradeable.parseYesOrNo(plugin.langYml))
+                                .replace("%discoverable%", this.isDiscoverable.parseYesOrNo(plugin.langYml))
+                                .replace("%enchantable%", this.isEnchantable.parseYesOrNo(plugin.langYml))
                         }
                         .flatMap {
                             WordUtils.wrap(it, 45, "\n", false)
@@ -278,4 +283,8 @@ private fun EcoEnchant.getInformationSlot(plugin: EcoEnchantsPlugin): Slot {
                 .build()
         )
     }
+}
+
+fun Boolean.parseYesOrNo(langYml: LangYml): String {
+    return if (this)  langYml.getFormattedString("yes") else langYml.getFormattedString("no")
 }
