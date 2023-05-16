@@ -2,16 +2,12 @@ package com.willfp.ecoenchants.display
 
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
-import com.willfp.eco.core.config.updating.ConfigUpdater
+import com.willfp.eco.core.placeholder.context.placeholderContext
 import com.willfp.eco.util.NumberUtils
 import com.willfp.eco.util.StringUtils
 import com.willfp.eco.util.formatEco
 import com.willfp.ecoenchants.EcoEnchantsPlugin
 import com.willfp.ecoenchants.enchants.EcoEnchantLike
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.JoinConfiguration
-import net.kyori.adventure.text.TextComponent
-import java.util.stream.Collectors
 
 // This is an object to be able to invalidate the cache on reload
 object DisplayCache {
@@ -21,9 +17,7 @@ object DisplayCache {
     val descriptionCache: Cache<DisplayableEnchant, List<String>> = Caffeine.newBuilder()
         .build()
 
-    @JvmStatic
-    @ConfigUpdater
-    fun onReload() {
+    internal fun reload() {
         nameCache.invalidateAll()
         descriptionCache.invalidateAll()
     }
@@ -91,6 +85,8 @@ fun EcoEnchantLike.getFormattedDescription(level: Int): List<String> {
             description = description.replace(tag, tag + descriptionFormat)
         }
 
-        StringUtils.lineWrap(description.formatEco(), wrap)
+        StringUtils.lineWrap(description.formatEco(placeholderContext(
+            injectable = this.config
+        )), wrap)
     }
 }
