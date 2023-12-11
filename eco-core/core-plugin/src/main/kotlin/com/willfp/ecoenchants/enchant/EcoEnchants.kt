@@ -1,14 +1,17 @@
 package com.willfp.ecoenchants.enchant
 
 import com.google.common.collect.HashBiMap
+import com.willfp.eco.core.Prerequisite
 import com.willfp.eco.core.config.interfaces.Config
 import com.willfp.ecoenchants.EcoEnchantsPlugin
 import com.willfp.ecoenchants.display.getFormattedName
+import com.willfp.ecoenchants.enchant.impl.EcoEnchantBase
 import com.willfp.ecoenchants.enchant.impl.LibreforgeEcoEnchant
 import com.willfp.ecoenchants.enchant.impl.hardcoded.EnchantmentPermanenceCurse
 import com.willfp.ecoenchants.enchant.impl.hardcoded.EnchantmentRepairing
 import com.willfp.ecoenchants.enchant.impl.hardcoded.EnchantmentReplenish
 import com.willfp.ecoenchants.enchant.impl.hardcoded.EnchantmentSoulbound
+import com.willfp.ecoenchants.enchant.registration.modern.ModernEnchantmentRegistererProxy
 import com.willfp.ecoenchants.integrations.EnchantRegistrations
 import com.willfp.ecoenchants.rarity.EnchantmentRarities
 import com.willfp.ecoenchants.target.EnchantmentTargets
@@ -34,6 +37,11 @@ object EcoEnchants : RegistrableCategory<EcoEnchant>("enchant", "enchants") {
     }
 
     override fun beforeReload(plugin: LibreforgePlugin) {
+        // Replace registry on reload to manage some enchantment removal logic
+        if (Prerequisite.HAS_1_20_3.isMet) {
+            plugin.getProxy(ModernEnchantmentRegistererProxy::class.java).replaceRegistry()
+        }
+
         plugin as EcoEnchantsPlugin
 
         EnchantmentRarities.update(plugin)
@@ -68,7 +76,7 @@ object EcoEnchants : RegistrableCategory<EcoEnchant>("enchant", "enchants") {
         }
     }
 
-    private fun doRegister(plugin: EcoEnchantsPlugin, enchant: EcoEnchant) {
+    private fun doRegister(plugin: EcoEnchantsPlugin, enchant: EcoEnchantBase) {
         val enchantment = plugin.enchantmentRegisterer.register(enchant)
         // Register delegated versions
         registry.register(enchantment as EcoEnchant)

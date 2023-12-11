@@ -64,7 +64,7 @@ class EcoEnchantsPlugin : LibreforgePlugin() {
         plugin = this
 
         if (Prerequisite.HAS_1_20_3.isMet) {
-            this.getProxy(ModernEnchantmentRegistererProxy::class.java).replaceRegistry()
+            plugin.getProxy(ModernEnchantmentRegistererProxy::class.java).replaceRegistry()
         }
     }
 

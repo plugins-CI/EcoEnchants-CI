@@ -1,8 +1,9 @@
 package com.willfp.ecoenchants.proxy.v1_20_R3.registration
 
-import com.willfp.eco.util.StringUtils
+import com.willfp.eco.util.toComponent
 import com.willfp.ecoenchants.display.getFormattedName
 import com.willfp.ecoenchants.enchant.EcoEnchant
+import com.willfp.ecoenchants.enchant.impl.EcoEnchantBase
 import io.papermc.paper.enchantments.EnchantmentRarity
 import net.kyori.adventure.text.Component
 import net.minecraft.world.item.enchantment.Enchantment
@@ -13,8 +14,8 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import java.util.Objects
 
-class DelegatedCraftEnchantment(
-    private val enchant: EcoEnchant,
+class EcoEnchantsCraftEnchantment(
+    private val enchant: EcoEnchantBase,
     nmsEnchantment: Enchantment
 ) : CraftEnchantment(enchant.enchantmentKey, nmsEnchantment), EcoEnchant by enchant {
     init {
@@ -64,7 +65,7 @@ class DelegatedCraftEnchantment(
     }
 
     override fun displayName(level: Int): Component {
-        return StringUtils.toComponent(enchant.getFormattedName(level))
+        return enchant.getFormattedName(level).toComponent()
     }
 
     override fun isTradeable(): Boolean {
@@ -104,11 +105,15 @@ class DelegatedCraftEnchantment(
     override fun getActiveSlots() = emptySet<EquipmentSlot>()
 
     override fun equals(other: Any?): Boolean {
-        return other is DelegatedCraftEnchantment &&
+        return other is EcoEnchantsCraftEnchantment &&
                 other.key == this.key
     }
 
     override fun hashCode(): Int {
         return Objects.hash(this.key)
+    }
+
+    override fun toString(): String {
+        return "EcoEnchantsCraftEnchantment(key=$key)"
     }
 }
