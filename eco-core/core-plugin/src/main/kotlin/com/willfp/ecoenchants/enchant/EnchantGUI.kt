@@ -1,6 +1,7 @@
 package com.willfp.ecoenchants.enchant
 
 import com.github.benmanes.caffeine.cache.Caffeine
+import com.willfp.eco.core.Prerequisite
 import com.willfp.eco.core.config.base.LangYml
 import com.willfp.eco.core.drops.DropQueue
 import com.willfp.eco.core.fast.fast
@@ -18,11 +19,13 @@ import com.willfp.eco.core.gui.slot.Slot
 import com.willfp.eco.core.items.Items
 import com.willfp.eco.core.items.builder.EnchantedBookBuilder
 import com.willfp.eco.core.items.builder.ItemStackBuilder
+import com.willfp.eco.core.items.isEcoEmpty
 import com.willfp.eco.core.items.isEmpty
 import com.willfp.eco.util.formatEco
 import com.willfp.eco.util.lineWrap
 import com.willfp.ecoenchants.EcoEnchantsPlugin
 import com.willfp.ecoenchants.display.EnchantSorter.sortForDisplay
+import com.willfp.ecoenchants.display.HideStoredEnchantsProxy
 import com.willfp.ecoenchants.display.getFormattedDescription
 import com.willfp.ecoenchants.display.getFormattedName
 import com.willfp.ecoenchants.target.EnchantmentTargets.applicableEnchantments
@@ -72,7 +75,7 @@ object EnchantGUI {
 
             onRender { player, menu ->
                 val atCaptive = menu.getCaptiveItem(player, captiveRow, captiveColumn)
-                if (atCaptive.isEmpty || atCaptive == null || atCaptive.type == Material.BOOK) {
+                if (atCaptive.isEcoEmpty || atCaptive == null || atCaptive.type == Material.BOOK) {
                     menu.setState(player, "enchants", EcoEnchants.values().map { it.enchantment }.sortForDisplay())
                 } else {
                     menu.setState(
@@ -205,7 +208,7 @@ private val cachedEnchantmentSlots = Caffeine.newBuilder()
     .build<EcoEnchant, Slot>()
 
 private fun EcoEnchant.getInformationSlot(plugin: EcoEnchantsPlugin, player: Player): Slot {
-    return cachedEnchantmentSlots.get(this) {
+    return cachedEnchantmentSlots.get(this) { it ->
         val level = if (plugin.configYml.getBool("enchantinfo.item.show-max-level")) {
             it.maximumLevel
         } else {
@@ -247,6 +250,11 @@ private fun EcoEnchant.getInformationSlot(plugin: EcoEnchantsPlugin, player: Pla
                         }
                 }
                 .build()
+                .fast()
+                .apply {
+                    plugin.getProxy(HideStoredEnchantsProxy::class.java).hideStoredEnchants(this)
+                }
+                .unwrap()
         )
     }
 }

@@ -1,16 +1,13 @@
-package com.willfp.ecoenchants.proxy.v1_20_R3.registration
+package com.willfp.ecoenchants.proxy.v1_21.registration
 
 import com.willfp.eco.util.toComponent
 import com.willfp.ecoenchants.display.getFormattedName
 import com.willfp.ecoenchants.enchant.EcoEnchant
 import com.willfp.ecoenchants.enchant.impl.EcoEnchantBase
-import io.papermc.paper.enchantments.EnchantmentRarity
 import net.kyori.adventure.text.Component
 import net.minecraft.world.item.enchantment.Enchantment
-import org.bukkit.craftbukkit.v1_20_R3.enchantments.CraftEnchantment
+import org.bukkit.craftbukkit.enchantments.CraftEnchantment
 import org.bukkit.enchantments.EnchantmentTarget
-import org.bukkit.entity.EntityCategory
-import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 class EcoEnchantsCraftEnchantment(
@@ -40,6 +37,10 @@ class EcoEnchantsCraftEnchantment(
         return enchant.conflictsWith(other)
     }
 
+    @Deprecated(
+        message = "EcoEnchants enchantments are not translatable",
+        replaceWith = ReplaceWith("this.displayName(level)")
+    )
     override fun translationKey(): String {
         return "ecoenchants:enchantment.$id"
     }
@@ -93,26 +94,6 @@ class EcoEnchantsCraftEnchantment(
     override fun getMaxModifiedCost(level: Int): Int {
         return Int.MAX_VALUE
     }
-
-    @Deprecated(
-        message = "EcoEnchants uses a custom system for enchantment rarity",
-        replaceWith = ReplaceWith("this.enchantRarity")
-    )
-    override fun getRarity(): EnchantmentRarity {
-        return EnchantmentRarity.RARE
-    }
-
-    @Deprecated(
-        message = "EcoEnchants do not have damage increase, this method is for sharpness/boa/smite",
-        replaceWith = ReplaceWith("0.0f")
-    )
-    override fun getDamageIncrease(level: Int, entityCategory: EntityCategory): Float = 0.0f
-
-    @Deprecated(
-        message = "getActiveSlots is an incompatible Paper API",
-        replaceWith = ReplaceWith("this.slots")
-    )
-    override fun getActiveSlots() = emptySet<EquipmentSlot>()
 
     override fun equals(other: Any?): Boolean {
         return other is EcoEnchant && this.enchantmentKey == other.enchantmentKey

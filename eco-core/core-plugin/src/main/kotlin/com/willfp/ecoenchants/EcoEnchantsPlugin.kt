@@ -4,6 +4,7 @@ import com.willfp.eco.core.Prerequisite
 import com.willfp.eco.core.command.impl.PluginCommand
 import com.willfp.eco.core.display.DisplayModule
 import com.willfp.eco.core.integrations.IntegrationLoader
+import com.willfp.eco.core.packet.PacketListener
 import com.willfp.ecoenchants.commands.CommandEcoEnchants
 import com.willfp.ecoenchants.commands.CommandEnchant
 import com.willfp.ecoenchants.commands.CommandEnchantInfo
@@ -39,6 +40,7 @@ import com.willfp.libreforge.loader.configs.ConfigCategory
 import com.willfp.libreforge.registerHolderPlaceholderProvider
 import com.willfp.libreforge.registerHolderProvider
 import com.willfp.libreforge.registerSpecificRefreshFunction
+import org.bukkit.Bukkit
 import org.bukkit.entity.LivingEntity
 import org.bukkit.event.Listener
 
@@ -89,6 +91,18 @@ class EcoEnchantsPlugin : LibreforgePlugin() {
 
     override fun handleAfterLoad() {
         isLoaded = true
+
+        if (Prerequisite.HAS_1_21.isMet) {
+            plugin.getProxy(ModernEnchantmentRegistererProxy::class.java).replaceRegistry()
+        }
+
+        // Run in afterLoad to prevent items from having their enchantments deleted
+        if (Prerequisite.HAS_1_20_5.isMet && !Prerequisite.HAS_1_21.isMet) {
+                Bukkit.getPluginManager().disablePlugin(this)
+
+                throw IllegalStateException("EcoEnchants does not support 1.20.6. Please update your server " +
+                        "or downgrade to 1.20.4.")
+        }
     }
 
     override fun handleReload() {
@@ -128,9 +142,13 @@ class EcoEnchantsPlugin : LibreforgePlugin() {
         )
     }
 
-    override fun createDisplayModule(): DisplayModule? {
-        return if (configYml.getBool("display.enabled")) {
+    override fun loadDisplayModules(): List<DisplayModule> {
+        if (!this.configYml.getBool("display.enabled")) {
+            return emptyList()
+        }
+
+        return listOf(
             EnchantDisplay(this)
-        } else null
+        )
     }
 }

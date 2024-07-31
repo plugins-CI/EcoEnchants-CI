@@ -69,7 +69,18 @@ class EnchantmentSoulbound(
 
             // Use native paper method
             if (Prerequisite.HAS_PAPER.isMet) {
-                event.itemsToKeep += items
+                val modifiedItems = if (enchant.config.getBool("single-use")) {
+                    items.map {
+                        val meta = it.itemMeta
+                        meta.removeEnchant(enchant.enchantment)
+                        it.itemMeta = meta
+                        it
+                    }
+                } else {
+                    items
+                }
+
+                event.itemsToKeep += modifiedItems
                 return
             }
 
@@ -124,8 +135,9 @@ class EnchantmentSoulbound(
             ignoreCancelled = true
         )
         fun preventDroppingSoulboundItems(event: PlayerDeathEvent) {
-            event.drops.removeIf { it.fast().persistentDataContainer.has(soulboundKey, PersistentDataType.INTEGER)
-                    && it.itemMeta.hasEnchant(enchant.enchantment)
+            event.drops.removeIf {
+                it.fast().persistentDataContainer.has(soulboundKey, PersistentDataType.INTEGER)
+                        && it.itemMeta.hasEnchant(enchant.enchantment)
             }
         }
     }
