@@ -46,6 +46,8 @@ class AnvilSupport(
     /**
      * Map to prevent incrementing cost several times as inventory events are fired 3 times.
      */
+
+
     private val antiRepeat = mutableSetOf<UUID>()
 
     /**
@@ -58,6 +60,17 @@ class AnvilSupport(
     @EventHandler(priority = EventPriority.HIGHEST)
     fun onAnvilPrepare(event: PrepareAnvilEvent) {
         val player = event.viewers.getOrNull(0) as? Player ?: return
+        val permanenceCurse = EcoEnchants.getByID("permanence_curse")
+        val leftItem = event.inventory.getItem(0)
+        val rightItem = event.inventory.getItem(1)
+        if (permanenceCurse != null) {
+            if ((leftItem != null && leftItem.fast().getEnchants(true).containsKey(permanenceCurse.enchantment)) ||
+                (rightItem != null && rightItem.fast().getEnchants(true).containsKey(permanenceCurse.enchantment))) {
+                event.result = null
+                event.inventory.setItem(2, null)
+                return
+            }
+        }
 
         if (this.plugin.getProxy(OpenInventoryProxy::class.java)
                 .getOpenInventory(player)::class.java.toString() == anvilGuiClass
@@ -156,14 +169,6 @@ class AnvilSupport(
         } else {
             ChatColor.stripColor(itemName)
         }.let { if (it.isNullOrEmpty()) left.fast().displayName else it }
-
-        val permanenceCurse = EcoEnchants.getByID("permanence_curse")
-
-        if (permanenceCurse != null) {
-            if (left.fast().getEnchants(true).containsKey(permanenceCurse.enchantment)) {
-                return FAIL
-            }
-        }
 
         if (right == null || right.type == Material.AIR) {
             if (left.fast().displayName == formattedItemName) {
@@ -264,7 +269,7 @@ class AnvilSupport(
 
         val enchantLevelDiff = abs(leftEnchants.values.sum() - outEnchants.values.sum())
         val xpCost =
-            plugin.configYml.getDouble("anvil.cost-exponent").pow(enchantLevelDiff) * enchantLevelDiff + unitRepairCost
+            enchantLevelDiff.toDouble().pow(plugin.configYml.getDouble("anvil.cost-exponent")) + unitRepairCost
 
         return AnvilResult(left, xpCost.roundToInt())
     }

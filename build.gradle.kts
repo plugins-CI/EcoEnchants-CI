@@ -31,6 +31,8 @@ dependencies {
     implementation(project(":eco-core:core-nms:v1_21", configuration = "reobf"))
     implementation(project(":eco-core:core-nms:v1_21_3", configuration = "reobf"))
     implementation(project(":eco-core:core-nms:v1_21_4", configuration = "reobf"))
+    implementation(project(":eco-core:core-nms:v1_21_5", configuration = "reobf"))
+    implementation(project(":eco-core:core-nms:v1_21_7", configuration = "reobf"))
 }
 
 allprojects {
